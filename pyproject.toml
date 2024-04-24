@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "kube-pipeline-cmg"
+version = "0.1.0"
+description = ""
+authors = ["Ivo Patty <ivo.patty@cts.co>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "3.11.4"
+kfp = "^2.7.0"
+tensorflow = "^2.16.1"
+torch = "^2.2.2"
+docker = "^7.0.0"
+google-cloud-pipeline-components = "^2.13.1"
+google-cloud-aiplatform = "^1.48.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

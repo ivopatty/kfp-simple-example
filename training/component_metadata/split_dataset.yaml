@@ -1,0 +1,90 @@
+# PIPELINE DEFINITION
+# Name: split-dataset
+# Inputs:
+#    dataset: system.Dataset
+# Outputs:
+#    test: system.Dataset
+#    train: system.Dataset
+components:
+  comp-split-dataset:
+    executorLabel: exec-split-dataset
+    inputDefinitions:
+      artifacts:
+        dataset:
+          artifactType:
+            schemaTitle: system.Dataset
+            schemaVersion: 0.0.1
+    outputDefinitions:
+      artifacts:
+        test:
+          artifactType:
+            schemaTitle: system.Dataset
+            schemaVersion: 0.0.1
+        train:
+          artifactType:
+            schemaTitle: system.Dataset
+            schemaVersion: 0.0.1
+deploymentSpec:
+  executors:
+    exec-split-dataset:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - split_dataset
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'pandas' 'numpy'\
+          \ && \"$0\" \"$@\"\n"
+        - python3
+        - -m
+        - kfp.dsl.executor_main
+        image: some-remote-gcr.io-image
+pipelineInfo:
+  name: split-dataset
+root:
+  dag:
+    outputs:
+      artifacts:
+        test:
+          artifactSelectors:
+          - outputArtifactKey: test
+            producerSubtask: split-dataset
+        train:
+          artifactSelectors:
+          - outputArtifactKey: train
+            producerSubtask: split-dataset
+    tasks:
+      split-dataset:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-split-dataset
+        inputs:
+          artifacts:
+            dataset:
+              componentInputArtifact: dataset
+        taskInfo:
+          name: split-dataset
+  inputDefinitions:
+    artifacts:
+      dataset:
+        artifactType:
+          schemaTitle: system.Dataset
+          schemaVersion: 0.0.1
+  outputDefinitions:
+    artifacts:
+      test:
+        artifactType:
+          schemaTitle: system.Dataset
+          schemaVersion: 0.0.1
+      train:
+        artifactType:
+          schemaTitle: system.Dataset
+          schemaVersion: 0.0.1
+schemaVersion: 2.1.0
+sdkVersion: kfp-2.7.0

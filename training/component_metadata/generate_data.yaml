@@ -1,0 +1,73 @@
+# PIPELINE DEFINITION
+# Name: generate-data
+# Inputs:
+#    length: int
+# Outputs:
+#    output: system.Dataset
+components:
+  comp-generate-data:
+    executorLabel: exec-generate-data
+    inputDefinitions:
+      parameters:
+        length:
+          parameterType: NUMBER_INTEGER
+    outputDefinitions:
+      artifacts:
+        output:
+          artifactType:
+            schemaTitle: system.Dataset
+            schemaVersion: 0.0.1
+deploymentSpec:
+  executors:
+    exec-generate-data:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - generate_data
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'pandas' && \"\
+          $0\" \"$@\"\n"
+        - python3
+        - -m
+        - kfp.dsl.executor_main
+        image: some-remote-gcr.io-image
+pipelineInfo:
+  name: generate-data
+root:
+  dag:
+    outputs:
+      artifacts:
+        output:
+          artifactSelectors:
+          - outputArtifactKey: output
+            producerSubtask: generate-data
+    tasks:
+      generate-data:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-generate-data
+        inputs:
+          parameters:
+            length:
+              componentInputParameter: length
+        taskInfo:
+          name: generate-data
+  inputDefinitions:
+    parameters:
+      length:
+        parameterType: NUMBER_INTEGER
+  outputDefinitions:
+    artifacts:
+      output:
+        artifactType:
+          schemaTitle: system.Dataset
+          schemaVersion: 0.0.1
+schemaVersion: 2.1.0
+sdkVersion: kfp-2.7.0
